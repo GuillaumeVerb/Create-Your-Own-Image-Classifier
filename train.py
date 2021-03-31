@@ -21,7 +21,7 @@ from utils import save_checkpoint, load_checkpoint
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Training")
-    parser.add_argument('--data_dir', action='store')
+    parser.add_argument('--data_dir', action='store', default="./flowers/")
     parser.add_argument('--arch', dest='arch', default='densenet121', choices=['vgg13', 'densenet121'])
     parser.add_argument('--learning_rate', dest='learning_rate', default='0.001')
     parser.add_argument('--hidden_units', dest='hidden_units', default='512')
@@ -62,7 +62,7 @@ def train(model, criterion, optimizer, dataloaders, epochs, gpu):
                 for ii, (inputs2,labels2) in enumerate(dataloaders[1]): # 1 = validation 
                         optimizer.zero_grad()
                         
-                        if gpu == 'gpu':
+                        if torch.cuda.is_available() and gpu == 'gpu':
                             inputs2, labels2 = inputs2.to('cuda') , labels2.to('cuda') # use cuda
                             model.to('cuda:0') # use cuda
                         else:
@@ -92,7 +92,7 @@ def main():
     print("hello") # just to make sure I can see something before it takes forever to trian 
     args = parse_args()
     
-    data_dir = 'flowers'
+    #data_dir = 'flowers'
     train_dir = data_dir + '/train'
     val_dir = data_dir + '/valid'
     test_dir = data_dir + '/test'
@@ -126,14 +126,14 @@ def main():
     if args.arch == "vgg13":
         feature_num = model.classifier[0].in_features
         classifier = nn.Sequential(OrderedDict([
-                                  ('fc1', nn.Linear(feature_num, 1024)),
+                                  ('fc1', nn.Linear(feature_num, args.hidden_units)),
                                   ('drop', nn.Dropout(p=0.5)),
                                   ('relu', nn.ReLU()),
-                                  ('fc2', nn.Linear(1024, 102)),
+                                  ('fc2', nn.Linear(args.hidden_units, 102)),
                                   ('output', nn.LogSoftmax(dim=1))]))
     elif args.arch == "densenet121":
         classifier = nn.Sequential(OrderedDict([
-                                  ('fc1', nn.Linear(1024, 500)),
+                                  ('fc1', nn.Linear(args.hidden_units, 500)),
                                   ('drop', nn.Dropout(p=0.6)),
                                   ('relu', nn.ReLU()),
                                   ('fc2', nn.Linear(500, 102)),

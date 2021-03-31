@@ -49,7 +49,7 @@ def predict(image_path, model, topk=3, gpu='gpu'):
     '''
     
     # TODO: Implement the code to predict the class from an image file
-    if gpu == 'gpu':
+    if torch.cuda.is_available() and gpu == 'gpu':
         model = model.cuda()
     else:
         model = model.cpu()
@@ -58,7 +58,7 @@ def predict(image_path, model, topk=3, gpu='gpu'):
     img_torch = img_torch.unsqueeze_(0)
     img_torch = img_torch.float()
 
-    if gpu == 'gpu':
+    if torch.cuda.is_available() and gpu == 'gpu':
         with torch.no_grad():
             output = model.forward(img_torch.cuda())
     else:
